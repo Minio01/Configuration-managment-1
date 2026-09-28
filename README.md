@@ -67,14 +67,14 @@ user@host:~$ exit
 - `src/main.py` — основной код эмулятора;
 - `tests/test_main.py` — тесты;
 - `scripts/` — стартовые скрипты эмулятора и демонстрационные `.bat`-файлы;
-- `Makefile` — удобные команды запуска;
+- `run.bat` — удобные команды запуска;
 - `.gitignore` — игнорируемые служебные файлы.
 
-## Команды Makefile
+## Команды run.bat
 
-```bash
-make run
-make test
+```bat
+run.bat
+run.bat test
 ```
 
 ## Примечание
