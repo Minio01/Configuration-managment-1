@@ -1,9 +1,20 @@
 import io
+import tempfile
 import unittest
-from contextlib import redirect_stdout
+from contextlib import redirect_stderr, redirect_stdout
+from pathlib import Path
 from unittest.mock import patch
 
-from src.main import cmd_cd, cmd_echo, cmd_ls, parse_line, repl
+from src.main import (
+    build_argument_parser,
+    cmd_cd,
+    cmd_echo,
+    cmd_ls,
+    main,
+    parse_line,
+    repl,
+    run_startup_script,
+)
 
 
 class ShellParserTests(unittest.TestCase):
@@ -39,6 +50,45 @@ class ShellParserTests(unittest.TestCase):
             with redirect_stdout(captured):
                 repl()
         self.assertIn('Выход.', captured.getvalue())
+
+    def test_argument_parser_accepts_both_configuration_paths(self):
+        args = build_argument_parser().parse_args([
+            '--vfs-path', 'vfs', '--startup-script', 'startup.txt'
+        ])
+        self.assertEqual(args.vfs_path, 'vfs')
+        self.assertEqual(args.startup_script, 'startup.txt')
+
+    def test_startup_script_reports_error_and_continues(self):
+        with tempfile.TemporaryDirectory() as directory:
+            script_path = Path(directory) / 'startup.txt'
+            script_path.write_text(
+                'unknown_command\necho after-error\nexit\n', encoding='utf-8'
+            )
+            output = io.StringIO()
+            errors = io.StringIO()
+            with patch('src.main.get_prompt', return_value='user@host:~$ '):
+                with redirect_stdout(output), redirect_stderr(errors):
+                    should_start_repl = run_startup_script(str(script_path))
+
+        self.assertFalse(should_start_repl)
+        self.assertIn('user@host:~$ unknown_command', output.getvalue())
+        self.assertIn('user@host:~$ echo after-error', output.getvalue())
+        self.assertIn('after-error', output.getvalue())
+        self.assertIn('Ошибка в стартовом скрипте', errors.getvalue())
+
+    def test_main_prints_parameters_and_runs_startup_script(self):
+        with tempfile.TemporaryDirectory() as directory:
+            script_path = Path(directory) / 'startup.txt'
+            script_path.write_text('exit\n', encoding='utf-8')
+            output = io.StringIO()
+            with redirect_stdout(output):
+                main([
+                    '--vfs-path', 'vfs', '--startup-script', str(script_path)
+                ])
+
+        self.assertIn('Путь к VFS: vfs', output.getvalue())
+        self.assertIn(f'Стартовый скрипт: {script_path}', output.getvalue())
+        self.assertIn('Выход.', output.getvalue())
 
 
 if __name__ == '__main__':
