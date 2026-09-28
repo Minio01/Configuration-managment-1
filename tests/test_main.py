@@ -8,7 +8,6 @@ from unittest.mock import patch
 from src.main import (
     build_argument_parser,
     cmd_cd,
-    cmd_echo,
     cmd_ls,
     main,
     parse_line,
@@ -20,12 +19,12 @@ from src.main import (
 class ShellParserTests(unittest.TestCase):
     def test_parse_line_splits_by_whitespace_and_preserves_quoted_strings(self):
         self.assertEqual(
-            parse_line('echo "hello world"'), ['echo', 'hello world']
+            parse_line('ls "hello world"'), ['ls', 'hello world']
         )
         self.assertEqual(parse_line('ls -l /tmp'), ['ls', '-l', '/tmp'])
 
     def test_parse_line_handles_unclosed_quote(self):
-        self.assertIsNone(parse_line('echo "unterminated'))
+        self.assertIsNone(parse_line('ls "unterminated'))
 
     def test_ls_and_cd_print_arguments(self):
         out = io.StringIO()
@@ -37,12 +36,6 @@ class ShellParserTests(unittest.TestCase):
         self.assertIn("['-l', '/tmp']", text)
         self.assertIn('cd: команда вызвана с аргументами:', text)
         self.assertIn("['..']", text)
-
-    def test_echo_prints_joined_arguments(self):
-        out = io.StringIO()
-        with redirect_stdout(out):
-            cmd_echo(['hello', 'world'])
-        self.assertEqual(out.getvalue(), 'hello world\n')
 
     def test_repl_exits_on_exit(self):
         captured = io.StringIO()
@@ -62,7 +55,7 @@ class ShellParserTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             script_path = Path(directory) / 'startup.txt'
             script_path.write_text(
-                'unknown_command\necho after-error\nexit\n', encoding='utf-8'
+                'unknown_command\nls after-error\nexit\n', encoding='utf-8'
             )
             output = io.StringIO()
             errors = io.StringIO()
@@ -72,7 +65,7 @@ class ShellParserTests(unittest.TestCase):
 
         self.assertFalse(should_start_repl)
         self.assertIn('user@host:~$ unknown_command', output.getvalue())
-        self.assertIn('user@host:~$ echo after-error', output.getvalue())
+        self.assertIn('user@host:~$ ls after-error', output.getvalue())
         self.assertIn('after-error', output.getvalue())
         self.assertIn('Ошибка в стартовом скрипте', errors.getvalue())
 
