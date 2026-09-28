@@ -1,6 +1,6 @@
 @echo off
 cd /d "%~dp0"
-set PYTHON=python
+set PYTHON=py
 
 if "%1"=="" goto run
 if /i "%1"=="run" goto run
