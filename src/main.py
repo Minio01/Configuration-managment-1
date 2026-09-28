@@ -66,15 +66,9 @@ def cmd_cd(args):
         print("  (аргументов нет)")
 
 
-def cmd_echo(args):
-    """Небольшой бонус — чтобы было что показать с кавычками."""
-    print(" ".join(args))
-
-
 COMMANDS = {
     "ls": cmd_ls,
     "cd": cmd_cd,
-    "echo": cmd_echo,
 }
 
 

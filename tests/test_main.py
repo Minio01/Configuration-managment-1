@@ -3,18 +3,18 @@ import unittest
 from contextlib import redirect_stdout
 from unittest.mock import patch
 
-from src.main import cmd_cd, cmd_echo, cmd_ls, parse_line, repl
+from src.main import cmd_cd, cmd_ls, parse_line, repl
 
 
 class ShellParserTests(unittest.TestCase):
     def test_parse_line_splits_by_whitespace_and_preserves_quoted_strings(self):
         self.assertEqual(
-            parse_line('echo "hello world"'), ['echo', 'hello world']
+            parse_line('ls "hello world"'), ['ls', 'hello world']
         )
         self.assertEqual(parse_line('ls -l /tmp'), ['ls', '-l', '/tmp'])
 
     def test_parse_line_handles_unclosed_quote(self):
-        self.assertIsNone(parse_line('echo "unterminated'))
+        self.assertIsNone(parse_line('ls "unterminated'))
 
     def test_ls_and_cd_print_arguments(self):
         out = io.StringIO()
@@ -26,12 +26,6 @@ class ShellParserTests(unittest.TestCase):
         self.assertIn("['-l', '/tmp']", text)
         self.assertIn('cd: команда вызвана с аргументами:', text)
         self.assertIn("['..']", text)
-
-    def test_echo_prints_joined_arguments(self):
-        out = io.StringIO()
-        with redirect_stdout(out):
-            cmd_echo(['hello', 'world'])
-        self.assertEqual(out.getvalue(), 'hello world\n')
 
     def test_repl_exits_on_exit(self):
         captured = io.StringIO()
