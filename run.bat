@@ -2,14 +2,17 @@
 cd /d "%~dp0"
 set PYTHON=py
 
-if "%1"=="" goto run
-if /i "%1"=="run" goto run
-if /i "%1"=="test" goto test
-echo Usage: run.bat [run^|test]
-exit /b 1
+if /i "%~1"=="test" goto test
+if /i "%~1"=="run" shift
+set ARGS=
+:collect
+if "%~1"=="" goto run
+set ARGS=%ARGS% %1
+shift
+goto collect
 
 :run
-%PYTHON% src\main.py
+%PYTHON% src\main.py %ARGS%
 exit /b %ERRORLEVEL%
 
 :test
