@@ -75,6 +75,7 @@ user@host:~$ exit
 ```bat
 run.bat
 run.bat test
+run.bat --vfs-path "vfs" --startup-script "scripts\startup_demo.txt"
 ```
 
 ## Примечание
