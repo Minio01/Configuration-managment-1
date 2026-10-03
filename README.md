@@ -33,12 +33,12 @@ VFS должна быть каталогом. Если путь не найде�
 
 ## Сборка и тесты
 
-```bash
-make run
-make test
+```bat
+run.bat
+run.bat test
 ```
 
-Без `make`:
+Без `run.bat`:
 
 ```bash
 python src/main.py
@@ -71,5 +71,5 @@ scripts\test_vfs_errors.bat
 - `tests/test_main.py` — автоматические тесты;
 - `tests/fixtures/` — тестовые источники VFS;
 - `scripts/` — стартовые скрипты эмулятора и сценарии для Windows;
-- `Makefile` — команды запуска и тестирования;
+- `run.bat` — команды запуска и тестирования;
 - `.gitignore` — исключения для локальных артефактов.
