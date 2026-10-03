@@ -14,6 +14,9 @@
 - `whoami` — имя пользователя реальной ОС;
 - `history` — пронумерованная история введенных команд;
 - `tail [-n N] файл...` — последние N строк (по умолчанию 10) файлов VFS;
+- `rm [-r] [-f] путь...` — удаление файлов; каталоги требуют `-r`, `-f`
+  скрывает ошибку отсутствия пути. Изменяется только VFS в памяти, файлы на
+  диске остаются нетронутыми;
 - `echo` выводит аргументы, `exit` завершает работу;
 - `vfs-info` — служебная команда: источник и число файлов и каталогов VFS;
 - параметр `--vfs-path` — каталог на диске, который загружается как VFS;
@@ -65,17 +68,18 @@ scripts\test_vfs_nested.bat
 scripts\test_vfs_all.bat
 scripts\test_vfs_errors.bat
 scripts\test_commands.bat
+scripts\test_rm.bat
 ```
 
 Тестовые VFS в `tests/fixtures`: `vfs_minimal` (один файл), `vfs_files`
 (несколько файлов), `vfs_nested` (три уровня вложенности). Скрипты `startup_commands.txt` и `startup_files.txt`
 проверяют все режимы `ls`, `cd`, `whoami`, `history`, `tail` и обработку
-ошибок.
+ошибок; `startup_rm.txt` (VFS `vfs_rm`) — все режимы `rm`.
 
 ## Структура
 
 - `src/main.py` — эмулятор, конфигурация и загрузчик VFS;
-- `tests/test_main.py`, `tests/test_commands.py` — автоматические тесты;
+- `tests/test_main.py`, `tests/test_commands.py`, `tests/test_rm.py` — автоматические тесты;
 - `tests/fixtures/` — тестовые источники VFS;
 - `scripts/` — стартовые скрипты эмулятора и сценарии для Windows;
 - `Makefile` — команды запуска и тестирования;

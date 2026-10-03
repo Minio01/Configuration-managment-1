@@ -1,0 +1,19 @@
+ls -l
+rm notes.txt
+ls
+rm notes.txt
+rm -f notes.txt
+rm -z log.txt
+rm
+rm sub
+cd sub
+rm -r /sub
+cd /
+rm -r sub
+ls
+cd /
+rm -r /
+rm readme.txt log.txt
+ls
+vfs-info
+exit

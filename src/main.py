@@ -287,6 +287,49 @@ def cmd_tail(args):
             print(line)
 
 
+def parse_rm_args(args):
+    """Разбирает аргументы rm: опции -r и -f и список путей."""
+    recursive = force = False
+    paths = []
+    for arg in args:
+        if not arg.startswith("-") or arg == "-":
+            paths.append(arg)
+        elif set(arg[1:]) <= set("rf"):
+            recursive = recursive or "r" in arg
+            force = force or "f" in arg
+        else:
+            raise CommandError(f"неизвестная опция: {arg}")
+    if not paths:
+        raise CommandError("не указан файл")
+    return recursive, force, paths
+
+
+def remove_path(path: str, recursive: bool):
+    """Удаляет файл или каталог из дерева VFS в памяти."""
+    node, parts = vfs.resolve(path, state.cwd)
+    if not parts:
+        raise CommandError("нельзя удалить корневой каталог")
+    if node.is_directory and not recursive:
+        raise CommandError("является каталогом (нужна опция -r)")
+    if state.cwd[:len(parts)] == parts:
+        raise CommandError("нельзя удалить текущий каталог или его родителя")
+    parent, _ = vfs.resolve("/" + "/".join(parts[:-1]))
+    del parent.children[parts[-1]]
+
+
+def cmd_rm(args):
+    """Удаляет файлы и каталоги (-r) только в памяти; -f скрывает отсутствие."""
+    recursive, force, paths = parse_rm_args(args)
+    for path in paths:
+        try:
+            remove_path(path, recursive)
+        except VFSLoadError as error:
+            if not force:
+                print(f"rm: {path}: {error}", file=sys.stderr)
+        except CommandError as error:
+            print(f"rm: {path}: {error}", file=sys.stderr)
+
+
 def cmd_vfs_info(args):
     """Служебная команда: показывает источник и размер загруженной VFS."""
     files, dirs = count_nodes(vfs.root)
@@ -302,6 +345,7 @@ COMMANDS = {
     "whoami": cmd_whoami,
     "history": cmd_history,
     "tail": cmd_tail,
+    "rm": cmd_rm,
     "vfs-info": cmd_vfs_info,
 }
 
