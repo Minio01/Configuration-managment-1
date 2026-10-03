@@ -1,0 +1,13 @@
+tail
+tail -n
+tail -n abc log.txt
+tail log.txt
+tail -n 3 log.txt
+tail -n 0 log.txt
+tail -n 2 log.txt notes.txt
+tail /
+ls -l
+ls missing
+whoami extra
+history
+exit

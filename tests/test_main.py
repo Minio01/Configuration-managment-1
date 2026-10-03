@@ -7,9 +7,7 @@ from unittest.mock import patch
 
 from src.main import (
     build_argument_parser,
-    cmd_cd,
     cmd_echo,
-    cmd_ls,
     cmd_vfs_info,
     count_nodes,
     main,
@@ -30,17 +28,6 @@ class ShellParserTests(unittest.TestCase):
 
     def test_parse_line_handles_unclosed_quote(self):
         self.assertIsNone(parse_line('echo "unterminated'))
-
-    def test_ls_and_cd_print_arguments(self):
-        out = io.StringIO()
-        with redirect_stdout(out):
-            cmd_ls(['-l', '/tmp'])
-            cmd_cd(['..'])
-        text = out.getvalue()
-        self.assertIn('ls: команда вызвана с аргументами:', text)
-        self.assertIn("['-l', '/tmp']", text)
-        self.assertIn('cd: команда вызвана с аргументами:', text)
-        self.assertIn("['..']", text)
 
     def test_echo_prints_joined_arguments(self):
         out = io.StringIO()

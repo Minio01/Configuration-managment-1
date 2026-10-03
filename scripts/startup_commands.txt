@@ -1,0 +1,18 @@
+whoami
+ls
+ls -l
+ls -x
+cd level1
+ls -l level2
+cd level2/level3
+ls
+tail deep.txt
+tail -n 1 deep.txt
+tail missing.txt
+cd ../..
+cd /level1/level2/level3/deep.txt
+cd /nowhere
+cd
+ls /level1 /level1/level2
+history
+exit
