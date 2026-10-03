@@ -36,6 +36,7 @@ VFS должна быть каталогом. Если путь не найде�
 ```bat
 run.bat
 run.bat test
+run.bat --vfs-path "tests\fixtures\vfs_nested" --startup-script "scripts\startup_all.txt"
 ```
 
 Без `run.bat`:
