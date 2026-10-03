@@ -1,3 +1,4 @@
 @echo off
 cd /d "%~dp0.."
+echo ^> python src\main.py --vfs-path "tests\fixtures\vfs_files" --startup-script "scripts\startup_demo.txt"
 python src\main.py --vfs-path "tests\fixtures\vfs_files" --startup-script "scripts\startup_demo.txt"
