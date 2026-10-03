@@ -1,4 +1,4 @@
 ls -l /tmp
 cd ..
-echo "hello from startup script"
+ls "hello from startup script"
 exit

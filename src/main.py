@@ -56,11 +56,6 @@ def cmd_cd(args):
         print("  (аргументов нет)")
 
 
-def cmd_echo(args):
-    """Выводит аргументы, объединенные пробелами."""
-    print(" ".join(args))
-
-
 class VFSLoadError(Exception):
     """Ошибка чтения или формата виртуальной файловой системы."""
 
@@ -173,7 +168,6 @@ def cmd_vfs_info(args):
 COMMANDS = {
     "ls": cmd_ls,
     "cd": cmd_cd,
-    "echo": cmd_echo,
     "vfs-info": cmd_vfs_info,
 }
 

@@ -2,9 +2,9 @@ ls
 ls -l /tmp "two words"
 cd ..
 cd /level1/level2
-echo "quoted  argument" plain
+ls "quoted  argument" plain
 vfs-info
-echo "unterminated
+ls "unterminated
 not_a_command
-echo "execution continues after errors"
+ls "execution continues after errors"
 exit
