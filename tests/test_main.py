@@ -10,10 +10,14 @@ from src.main import (
     cmd_cd,
     cmd_echo,
     cmd_ls,
+    cmd_vfs_info,
+    count_nodes,
     main,
     parse_line,
     repl,
     run_startup_script,
+    VFSLoadError,
+    VirtualFileSystem,
 )
 
 
@@ -76,19 +80,90 @@ class ShellParserTests(unittest.TestCase):
         self.assertIn('after-error', output.getvalue())
         self.assertIn('Ошибка в стартовом скрипте', errors.getvalue())
 
+    def test_vfs_loads_nested_files_without_changing_source(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / 'source'
+            nested = source / 'level1' / 'level2' / 'level3'
+            nested.mkdir(parents=True)
+            original = nested / 'data.txt'
+            original.write_bytes(b'unchanged content')
+
+            filesystem = VirtualFileSystem.load(str(source))
+            node, parts = filesystem.resolve('/level1/level2/level3/data.txt')
+
+            self.assertFalse(node.is_directory)
+            self.assertEqual(parts, ['level1', 'level2', 'level3', 'data.txt'])
+            self.assertEqual(node.content, b'unchanged content')
+            self.assertEqual(original.read_bytes(), b'unchanged content')
+
+    def test_vfs_resolves_relative_paths_and_parent_segments(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / 'source'
+            (source / 'folder').mkdir(parents=True)
+            (source / 'item.txt').write_text('item', encoding='utf-8')
+            filesystem = VirtualFileSystem.load(str(source))
+
+            node, parts = filesystem.resolve('../item.txt', ['folder'])
+
+        self.assertFalse(node.is_directory)
+        self.assertEqual(parts, ['item.txt'])
+
+    def test_vfs_rejects_missing_source(self):
+        with tempfile.TemporaryDirectory() as directory:
+            missing_path = Path(directory) / 'missing'
+            with self.assertRaisesRegex(VFSLoadError, 'путь не найден'):
+                VirtualFileSystem.load(str(missing_path))
+
+    def test_vfs_rejects_file_as_source_directory(self):
+        with tempfile.TemporaryDirectory() as directory:
+            file_path = Path(directory) / 'not-a-directory'
+            file_path.write_text('not a VFS directory', encoding='utf-8')
+            with self.assertRaisesRegex(VFSLoadError, 'ожидалась директория'):
+                VirtualFileSystem.load(str(file_path))
+
     def test_main_prints_parameters_and_runs_startup_script(self):
         with tempfile.TemporaryDirectory() as directory:
             script_path = Path(directory) / 'startup.txt'
+            vfs_path = Path(directory) / 'vfs'
+            vfs_path.mkdir()
             script_path.write_text('exit\n', encoding='utf-8')
             output = io.StringIO()
             with redirect_stdout(output):
                 main([
-                    '--vfs-path', 'vfs', '--startup-script', str(script_path)
+                    '--vfs-path', str(vfs_path), '--startup-script',
+                    str(script_path)
                 ])
 
-        self.assertIn('Путь к VFS: vfs', output.getvalue())
+        self.assertIn(f'Путь к VFS: {vfs_path}', output.getvalue())
         self.assertIn(f'Стартовый скрипт: {script_path}', output.getvalue())
+        self.assertIn('VFS загружена из:', output.getvalue())
         self.assertIn('Выход.', output.getvalue())
+
+    def test_vfs_info_counts_files_and_directories(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / 'source'
+            (source / 'a' / 'b').mkdir(parents=True)
+            (source / 'a' / 'b' / 'one.txt').write_text('1', encoding='utf-8')
+            (source / 'two.txt').write_text('2', encoding='utf-8')
+            filesystem = VirtualFileSystem.load(str(source))
+            self.assertEqual(count_nodes(filesystem.root), (2, 2))
+
+            output = io.StringIO()
+            with patch('src.main.vfs', filesystem):
+                with redirect_stdout(output):
+                    cmd_vfs_info([])
+        self.assertIn('файлов: 2, каталогов: 2', output.getvalue())
+
+    def test_main_reports_invalid_vfs_and_stops(self):
+        with tempfile.TemporaryDirectory() as directory:
+            invalid_path = Path(directory) / 'missing'
+            output = io.StringIO()
+            errors = io.StringIO()
+            with redirect_stdout(output), redirect_stderr(errors):
+                result = main(['--vfs-path', str(invalid_path)])
+
+        self.assertEqual(result, 1)
+        self.assertIn('Ошибка загрузки VFS', errors.getvalue())
 
 
 if __name__ == '__main__':

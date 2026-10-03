@@ -11,3 +11,5 @@ dist/
 *.log
 *.zip
 *.tar.gz
+*.pdf
+
